@@ -22,6 +22,7 @@ import (
 
 	persistapi "github.com/kata-containers/runtime/virtcontainers/persist/api"
 	chclient "github.com/kata-containers/runtime/virtcontainers/pkg/cloud-hypervisor/client"
+	"github.com/opencontainers/selinux/go-selinux/label"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -325,6 +326,11 @@ func (clh *cloudHypervisor) startSandbox(timeout int) error {
 	} else {
 		return errors.New("cloud-hypervisor only supports virtio based file sharing")
 	}
+
+	if err := label.SetProcessLabel(clh.config.ProcessLabel); err != nil {
+		return err
+	}
+	defer label.SetProcessLabel("")
 
 	var strErr string
 	strErr, pid, err := clh.LaunchClh()

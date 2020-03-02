@@ -17,6 +17,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/opencontainers/selinux/go-selinux/label"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -443,6 +444,11 @@ func (a *Acrn) startSandbox(timeoutSecs int) error {
 			}
 		}
 	}()
+
+	if err := label.SetProcessLabel(a.config.ProcessLabel); err != nil {
+		return err
+	}
+	defer label.SetProcessLabel("")
 
 	var strErr string
 	var PID int

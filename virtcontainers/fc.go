@@ -31,6 +31,7 @@ import (
 	"github.com/kata-containers/runtime/virtcontainers/pkg/firecracker/client"
 	models "github.com/kata-containers/runtime/virtcontainers/pkg/firecracker/client/models"
 	ops "github.com/kata-containers/runtime/virtcontainers/pkg/firecracker/client/operations"
+	"github.com/opencontainers/selinux/go-selinux/label"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -774,6 +775,11 @@ func (fc *firecracker) startSandbox(timeout int) error {
 			fc.fcEnd()
 		}
 	}()
+
+	if err := label.SetProcessLabel(fc.config.ProcessLabel); err != nil {
+		return err
+	}
+	defer label.SetProcessLabel("")
 
 	err = fc.fcInit(fcTimeout)
 	if err != nil {

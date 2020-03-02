@@ -1015,12 +1015,6 @@ func (k *kataAgent) constraintGRPCSpec(grpcSpec *grpc.Spec, passSeccomp bool) {
 		grpcSpec.Linux.Seccomp = nil
 	}
 
-	// Disable selinux
-	if grpcSpec.Process.SelinuxLabel != "" {
-		k.Logger().Warn("Selinux label specified in config, but not supported in Kata yet, running container without selinux")
-		grpcSpec.Process.SelinuxLabel = ""
-	}
-
 	// By now only CPU constraints are supported
 	// Issue: https://github.com/kata-containers/runtime/issues/158
 	// Issue: https://github.com/kata-containers/runtime/issues/204
@@ -1304,6 +1298,8 @@ func (k *kataAgent) createContainer(sandbox *Sandbox, c *Container) (p *Process,
 	if err != nil {
 		return nil, err
 	}
+
+	c.sandbox.config.HypervisorConfig.ProcessLabel = grpcSpec.Process.SelinuxLabel
 
 	// We need to give the OCI spec our absolute rootfs path in the guest.
 	grpcSpec.Root.Path = rootPath

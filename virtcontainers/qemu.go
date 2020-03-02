@@ -25,6 +25,7 @@ import (
 	"unsafe"
 
 	govmmQemu "github.com/intel/govmm/qemu"
+	"github.com/opencontainers/selinux/go-selinux/label"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -778,6 +779,11 @@ func (q *qemu) startSandbox(timeout int) error {
 			return err
 		}
 	}
+
+	if err := label.SetProcessLabel(q.config.ProcessLabel); err != nil {
+		return err
+	}
+	defer label.SetProcessLabel("")
 
 	var strErr string
 	strErr, err = govmmQemu.LaunchQemu(q.qemuConfig, newQMPLogger())
